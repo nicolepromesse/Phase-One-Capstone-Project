@@ -11,89 +11,66 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomerDAOImpl
-        implements DAO<Customer> {
+public class CustomerDAOImpl implements DAO<Customer> {
 
     @Override
-    public void save(Customer customer)
-            throws SQLException {
+    public void save(Customer customer) throws SQLException {
+        String sql = "INSERT INTO customers(full_name, email, phone_number, pin) VALUES(?, ?, ?, ?)";
 
-        String sql =
-                "INSERT INTO customers(full_name, email, phone_number, pin) VALUES(?, ?, ?, ?)";
+        try (Connection connection = DBConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-        try (
-
-                Connection connection =
-                        DBConnection.connect();
-
-                PreparedStatement preparedStatement =
-                        connection.prepareStatement(sql)
-
-        ) {
-
-            preparedStatement.setString(
-                    1,
-                    customer.getFullName()
-            );
-
-            preparedStatement.setString(
-                    2,
-                    customer.getEmail()
-            );
-
-            preparedStatement.setString(
-                    3,
-                    customer.getPhoneNumber()
-            );
-
-            preparedStatement.setString(
-                    4,
-                    customer.getPin()
-            );
+            preparedStatement.setString(1, customer.getFullName());
+            preparedStatement.setString(2, customer.getEmail());
+            preparedStatement.setString(3, customer.getPhoneNumber());
+            preparedStatement.setString(4, customer.getPin());
 
             preparedStatement.executeUpdate();
-
-            System.out.println(
-                    "Customer saved successfully"
-            );
         }
     }
 
     @Override
-    public Customer getById(int id)
-            throws SQLException {
+    public Customer getById(int id) throws SQLException {
+        String sql = "SELECT * FROM customers WHERE id = ?";
 
-        String sql =
-                "SELECT * FROM customers WHERE id = ?";
-
-        try (
-
-                Connection connection =
-                        DBConnection.connect();
-
-                PreparedStatement preparedStatement =
-                        connection.prepareStatement(sql)
-
-        ) {
+        try (Connection connection = DBConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setInt(1, id);
 
-            ResultSet resultSet =
-                    preparedStatement.executeQuery();
+            ResultSet rs = preparedStatement.executeQuery();
 
-            if (resultSet.next()) {
-
+            if (rs.next()) {
                 return new Customer(
+                        rs.getInt("id"),
+                        rs.getString("full_name"),
+                        rs.getString("email"),
+                        rs.getString("phone_number"),
+                        rs.getString("pin")
+                );
+            }
+        }
 
-                        resultSet.getInt("id"),
+        return null;
+    }
 
-                        resultSet.getString("full_name"),
+    public Customer getByPin(String pin) throws SQLException {
+        String sql = "SELECT * FROM customers WHERE pin = ?";
 
-                        resultSet.getString("email"),
+        try (Connection connection = DBConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-                        resultSet.getString("phone_number"),
+            preparedStatement.setString(1, pin);
 
-                        resultSet.getString("pin")
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                return new Customer(
+                        rs.getInt("id"),
+                        rs.getString("full_name"),
+                        rs.getString("email"),
+                        rs.getString("phone_number"),
+                        rs.getString("pin")
                 );
             }
         }
@@ -102,45 +79,22 @@ public class CustomerDAOImpl
     }
 
     @Override
-    public List<Customer> getAll()
-            throws SQLException {
+    public List<Customer> getAll() throws SQLException {
+        List<Customer> customers = new ArrayList<>();
+        String sql = "SELECT * FROM customers";
 
-        List<Customer> customers =
-                new ArrayList<>();
+        try (Connection connection = DBConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet rs = preparedStatement.executeQuery()) {
 
-        String sql =
-                "SELECT * FROM customers";
-
-        try (
-
-                Connection connection =
-                        DBConnection.connect();
-
-                PreparedStatement preparedStatement =
-                        connection.prepareStatement(sql);
-
-                ResultSet resultSet =
-                        preparedStatement.executeQuery()
-
-        ) {
-
-            while (resultSet.next()) {
-
-                Customer customer =
-                        new Customer(
-
-                                resultSet.getInt("id"),
-
-                                resultSet.getString("full_name"),
-
-                                resultSet.getString("email"),
-
-                                resultSet.getString("phone_number"),
-
-                                resultSet.getString("pin")
-                        );
-
-                customers.add(customer);
+            while (rs.next()) {
+                customers.add(new Customer(
+                        rs.getInt("id"),
+                        rs.getString("full_name"),
+                        rs.getString("email"),
+                        rs.getString("phone_number"),
+                        rs.getString("pin")
+                ));
             }
         }
 
@@ -148,79 +102,31 @@ public class CustomerDAOImpl
     }
 
     @Override
-    public void update(Customer customer)
-            throws SQLException {
+    public void update(Customer customer) throws SQLException {
+        String sql = "UPDATE customers SET full_name = ?, email = ?, phone_number = ?, pin = ? WHERE id = ?";
 
-        String sql =
-                "UPDATE customers SET full_name = ?, email = ?, phone_number = ?, pin = ? WHERE id = ?";
+        try (Connection connection = DBConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
-        try (
-
-                Connection connection =
-                        DBConnection.connect();
-
-                PreparedStatement preparedStatement =
-                        connection.prepareStatement(sql)
-
-        ) {
-
-            preparedStatement.setString(
-                    1,
-                    customer.getFullName()
-            );
-
-            preparedStatement.setString(
-                    2,
-                    customer.getEmail()
-            );
-
-            preparedStatement.setString(
-                    3,
-                    customer.getPhoneNumber()
-            );
-
-            preparedStatement.setString(
-                    4,
-                    customer.getPin()
-            );
-
-            preparedStatement.setInt(
-                    5,
-                    customer.getId()
-            );
+            preparedStatement.setString(1, customer.getFullName());
+            preparedStatement.setString(2, customer.getEmail());
+            preparedStatement.setString(3, customer.getPhoneNumber());
+            preparedStatement.setString(4, customer.getPin());
+            preparedStatement.setInt(5, customer.getId());
 
             preparedStatement.executeUpdate();
-
-            System.out.println(
-                    "Customer updated successfully"
-            );
         }
     }
 
     @Override
-    public void delete(int id)
-            throws SQLException {
+    public void delete(int id) throws SQLException {
+        String sql = "DELETE FROM customers WHERE id = ?";
 
-        String sql =
-                "DELETE FROM customers WHERE id = ?";
-
-        try (
-
-                Connection connection =
-                        DBConnection.connect();
-
-                PreparedStatement preparedStatement =
-                        connection.prepareStatement(sql)
-
-        ) {
+        try (Connection connection = DBConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
             preparedStatement.setInt(1, id);
-
             preparedStatement.executeUpdate();
-
-            System.out.println(
-                    "Customer deleted successfully"
-            );
         }
     }
 }

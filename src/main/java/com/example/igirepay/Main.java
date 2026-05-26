@@ -192,10 +192,6 @@ public class Main {
     }
 
 
-    // ─────────────────────────────────────────
-    //              ACCOUNT MENU
-    // ─────────────────────────────────────────
-
     private static void accountMenu() {
         boolean back = false;
 

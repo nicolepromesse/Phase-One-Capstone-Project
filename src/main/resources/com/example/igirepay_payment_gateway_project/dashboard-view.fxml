@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.igirepay.lab3.javafxui.DashboardController"
+            styleClass="root-pane"
+            stylesheets="@styles.css">
+
+    <top>
+        <HBox styleClass="nav-bar" alignment="CENTER_LEFT" spacing="16">
+            <padding>
+                <Insets top="0" right="24" bottom="0" left="24"/>
+            </padding>
+
+            <Label text="💳 IgirePay" styleClass="nav-brand"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="welcomeLabel" styleClass="nav-welcome"/>
+            <Button text="Logout" onAction="#handleLogout" styleClass="btn-nav-logout"/>
+        </HBox>
+    </top>
+
+    <left>
+        <VBox styleClass="sidebar" spacing="4" minWidth="210">
+            <padding>
+                <Insets top="24" right="12" bottom="24" left="12"/>
+            </padding>
+
+            <Label text="MENU" styleClass="sidebar-section"/>
+
+            <Button text="🏠 Dashboard" onAction="#showDashboard" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="👤 Customers" onAction="#showCustomers" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="🏦 Accounts" onAction="#showAccounts" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="💸 Transactions" onAction="#showTransactions" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="📊 Reports" onAction="#showReports" styleClass="sidebar-btn" maxWidth="Infinity"/>
+
+            <Separator/>
+
+            <Button text="🔐 Change PIN" onAction="#showChangePin" styleClass="sidebar-btn" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane fx:id="contentPane" styleClass="content-area">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24"/>
+            </padding>
+        </StackPane>
+    </center>
+
+</BorderPane>
