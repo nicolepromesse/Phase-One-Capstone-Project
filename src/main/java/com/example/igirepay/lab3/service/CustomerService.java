@@ -27,15 +27,7 @@ public class CustomerService {
     }
 
     public Customer getCustomerByPin(String pin) throws SQLException {
-        List<Customer> customers = customerDAO.getAll();
-
-        for (Customer customer : customers) {
-            if (customer.getPin().equals(pin)) {
-                return customer;
-            }
-        }
-
-        return null;
+        return customerDAO.getByPin(pin);
     }
 
     public List<Customer> getAll() throws SQLException {
