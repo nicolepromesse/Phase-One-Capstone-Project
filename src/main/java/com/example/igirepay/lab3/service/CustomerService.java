@@ -30,6 +30,10 @@ public class CustomerService {
         return customerDAO.getByPin(pin);
     }
 
+    public Customer getCustomerByPhone(String phone) throws SQLException {
+        return customerDAO.getByPhone(phone);
+    }
+
     public List<Customer> getAll() throws SQLException {
         return customerDAO.getAll();
     }

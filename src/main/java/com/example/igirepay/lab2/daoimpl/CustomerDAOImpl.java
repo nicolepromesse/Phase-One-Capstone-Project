@@ -78,6 +78,30 @@ public class CustomerDAOImpl implements DAO<Customer> {
         return null;
     }
 
+    public Customer getByPhone(String phone) throws SQLException {
+        String sql = "SELECT * FROM customers WHERE phone_number = ?";
+
+        try (Connection connection = DBConnection.connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+            preparedStatement.setString(1, phone);
+
+            ResultSet rs = preparedStatement.executeQuery();
+
+            if (rs.next()) {
+                return new Customer(
+                        rs.getInt("id"),
+                        rs.getString("full_name"),
+                        rs.getString("email"),
+                        rs.getString("phone_number"),
+                        rs.getString("pin")
+                );
+            }
+        }
+
+        return null;
+    }
+
     @Override
     public List<Customer> getAll() throws SQLException {
         List<Customer> customers = new ArrayList<>();
