@@ -13,10 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/**
- * Generates transaction reports: CSV export, daily summaries, account statements.
- * Fulfils Lab 3 Exercise 3.3 requirements.
- */
 public class TransactionReportGenerator {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -24,19 +20,12 @@ public class TransactionReportGenerator {
 
     private final TransactionDAOImpl transactionDAO = new TransactionDAOImpl();
 
-    /**
-     * Export all transactions to a CSV file.
-     * @return path of generated file
-     */
     public String exportAllToCSV(String outputPath) throws SQLException, IOException {
         List<Transaction> transactions = transactionDAO.getAll();
         writeCSV(outputPath, transactions);
         return outputPath;
     }
 
-    /**
-     * Export transactions for a specific account to CSV.
-     */
     public String exportAccountToCSV(int accountId, String outputPath) throws SQLException, IOException {
         List<Transaction> transactions = transactionDAO.getByAccountId(accountId);
         writeCSV(outputPath, transactions);
@@ -58,9 +47,6 @@ public class TransactionReportGenerator {
         }
     }
 
-    /**
-     * Daily transaction summary grouped by date.
-     */
     public String getDailySummary() throws SQLException {
         List<Transaction> all = transactionDAO.getAll();
 
@@ -91,9 +77,7 @@ public class TransactionReportGenerator {
         return sb.toString();
     }
 
-    /**
-     * Account statement for a specific account.
-     */
+
     public String getAccountStatement(int accountId) throws SQLException {
         List<Transaction> txs = transactionDAO.getByAccountId(accountId);
 

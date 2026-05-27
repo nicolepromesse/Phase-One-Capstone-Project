@@ -52,7 +52,7 @@ public class DashboardController {
         } catch (Exception e) { showError("Logout error: " + e.getMessage()); }
     }
 
-    // ── Navigation ─────────────────────────────────────────────────
+    // ── Navigation
 
     @FXML private void showDashboard()    { contentPane.getChildren().setAll(buildDashboardPanel()); }
     @FXML private void showCustomers()    { contentPane.getChildren().setAll(buildCustomersPanel()); }
@@ -122,7 +122,6 @@ public class DashboardController {
         return card;
     }
 
-    // ── CUSTOMERS PANEL ───────────────────────────────────────────
 
     private VBox buildCustomersPanel() {
         VBox root = new VBox(16);
@@ -205,7 +204,6 @@ public class DashboardController {
         return form;
     }
 
-    // ── ACCOUNTS PANEL ─────────────────────────────────────────────
 
     private VBox buildAccountsPanel() {
         VBox root = new VBox(16);
@@ -301,7 +299,6 @@ public class DashboardController {
         return form;
     }
 
-    // ── TRANSACTIONS PANEL ─────────────────────────────────────────
 
     private VBox buildTransactionsPanel() {
         VBox root = new VBox(16);
@@ -401,8 +398,6 @@ public class DashboardController {
         return box;
     }
 
-    // ── REPORTS PANEL ──────────────────────────────────────────────
-
     private VBox buildReportsPanel() {
         VBox root = new VBox(16);
 
@@ -455,8 +450,6 @@ public class DashboardController {
         return root;
     }
 
-    // ── CHANGE PIN PANEL ───────────────────────────────────────────
-
     private VBox buildChangePinPanel() {
         VBox root = new VBox(16);
         root.setMaxWidth(420);
@@ -506,7 +499,6 @@ public class DashboardController {
         return root;
     }
 
-    // ── Helpers ─────────────────────────────────────────────────────
 
     private TextField field(String prompt) {
         TextField tf = new TextField();

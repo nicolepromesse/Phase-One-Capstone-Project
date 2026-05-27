@@ -9,9 +9,6 @@ import com.example.igirepay.lab3.exception.AccountNotFoundException;
 import java.sql.SQLException;
 import java.util.List;
 
-/**
- * Service layer for account management operations.
- */
 public class AccountService {
 
     private final AccountDAOImpl accountDAO = new AccountDAOImpl();

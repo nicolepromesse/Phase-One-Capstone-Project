@@ -9,10 +9,6 @@ import javafx.scene.control.*;
 
 import java.util.List;
 
-/**
- * JavaFX controller for Lab3 UI. Wires PaymentService to UI controls.
- * Corresponding FXML: payment-view.fxml
- */
 public class PaymentController {
 
     @FXML private TextField accountIdField;

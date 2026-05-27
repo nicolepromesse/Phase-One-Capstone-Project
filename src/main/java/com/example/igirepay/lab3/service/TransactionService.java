@@ -13,10 +13,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Service layer for all transaction operations.
- * Handles deposit, withdrawal, transfer with idempotency and rollback.
- */
+
 public class TransactionService {
 
     private final TransactionDAOImpl transactionDAO = new TransactionDAOImpl();
