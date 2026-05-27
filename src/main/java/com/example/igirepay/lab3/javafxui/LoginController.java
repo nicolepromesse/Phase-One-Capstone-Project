@@ -28,7 +28,7 @@ public class LoginController {
         String pin = pinField.getText().trim();
 
         if (pin.isEmpty()) {
-            errorLabel.setText("Please enter PIN");
+            errorLabel.setText("Please enter your PIN.");
             return;
         }
 
@@ -37,14 +37,14 @@ public class LoginController {
             Customer customer = customerService.getCustomerByPin(pin);
 
             if (customer == null) {
-                errorLabel.setText("Invalid PIN");
+                errorLabel.setText("Incorrect PIN. Please try again.");
                 return;
             }
 
             openDashboard(customer);
 
         } catch (Exception e) {
-            errorLabel.setText("Login failed");
+            errorLabel.setText("Unable to connect. Please check your connection and try again.");
         }
     }
 
@@ -64,7 +64,7 @@ public class LoginController {
             stage.setTitle("IgirePay Register");
 
         } catch (Exception e) {
-            errorLabel.setText("Cannot open register page");
+            errorLabel.setText("Cannot open register page.");
         }
     }
 
@@ -86,7 +86,7 @@ public class LoginController {
             stage.setTitle("IgirePay Dashboard");
 
         } catch (Exception e) {
-            errorLabel.setText("Cannot open dashboard");
+            errorLabel.setText("Cannot open dashboard.");
         }
     }
 }

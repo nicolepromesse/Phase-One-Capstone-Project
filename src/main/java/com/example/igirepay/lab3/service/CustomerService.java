@@ -27,15 +27,11 @@ public class CustomerService {
     }
 
     public Customer getCustomerByPin(String pin) throws SQLException {
-        List<Customer> customers = customerDAO.getAll();
+        return customerDAO.getByPin(pin);
+    }
 
-        for (Customer customer : customers) {
-            if (customer.getPin().equals(pin)) {
-                return customer;
-            }
-        }
-
-        return null;
+    public Customer getCustomerByPhone(String phone) throws SQLException {
+        return customerDAO.getByPhone(phone);
     }
 
     public List<Customer> getAll() throws SQLException {
