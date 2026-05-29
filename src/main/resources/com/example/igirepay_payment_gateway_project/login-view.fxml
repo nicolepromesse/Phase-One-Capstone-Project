@@ -28,6 +28,12 @@
 
         <VBox spacing="12">
 
+            <Label text="Phone Number" styleClass="field-label"/>
+
+            <TextField fx:id="phoneField"
+                       promptText="Enter your phone number (e.g. 0788123456)"
+                       styleClass="input-field"/>
+
             <Label text="PIN" styleClass="field-label"/>
 
             <PasswordField fx:id="pinField"
