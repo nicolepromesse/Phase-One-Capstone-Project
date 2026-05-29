@@ -61,6 +61,9 @@ public class DashboardController {
     @FXML private void showCustomers()    { contentPane.getChildren().setAll(buildCustomersPanel()); }
     @FXML private void showAccounts()     { contentPane.getChildren().setAll(buildAccountsPanel()); }
     @FXML private void showTransactions() { contentPane.getChildren().setAll(buildTransactionsPanel()); }
+    @FXML private void showDeposit()      { contentPane.getChildren().setAll(buildSingleTransactionPanel("Deposit",  "➕", "#f0fdf4", "#16a34a", false)); }
+    @FXML private void showWithdraw()     { contentPane.getChildren().setAll(buildSingleTransactionPanel("Withdraw", "➖", "#fff7ed", "#ea580c", false)); }
+    @FXML private void showTransfer()     { contentPane.getChildren().setAll(buildSingleTransactionPanel("Transfer", "⇄",  "#f0f9ff", "#0369a1", true)); }
     @FXML private void showReports()      { contentPane.getChildren().setAll(buildReportsPanel()); }
     @FXML private void showChangePin()    { contentPane.getChildren().setAll(buildChangePinPanel()); }
 
@@ -276,7 +279,11 @@ public class DashboardController {
         table.getColumns().addAll(cId, cCust, cType, cBal);
 
         Button refreshBtn = new Button("⟳ Refresh"); refreshBtn.getStyleClass().add("btn-secondary");
-        Runnable load = () -> { try { table.setItems(FXCollections.observableArrayList(accountService.getAll())); } catch (SQLException e) { showError(e.getMessage()); } };
+        Runnable load = () -> { try { table.setItems(FXCollections.observableArrayList(
+                accountService.getAll().stream()
+                        .filter(a -> a.getCustomer().getId() == currentCustomer.getId())
+                        .collect(java.util.stream.Collectors.toList())
+        )); } catch (SQLException e) { showError(e.getMessage()); } };
         load.run();
         refreshBtn.setOnAction(e -> load.run());
 
@@ -471,6 +478,107 @@ public class DashboardController {
         return card;
     }
 
+    // ── SINGLE TRANSACTION PAGES (Deposit / Withdraw / Transfer) ──
+
+    private VBox buildSingleTransactionPanel(String type, String icon, String bg, String accent, boolean isTransfer) {
+        VBox root = new VBox(24);
+        Label title = new Label(icon + "  " + type + " Money");
+        title.getStyleClass().add("page-title");
+
+        VBox card = new VBox(14);
+        card.setPadding(new Insets(28));
+        card.setMaxWidth(480);
+        card.setStyle("-fx-background-color:white;-fx-background-radius:14;-fx-border-color:#e5e7eb;-fx-border-radius:14;");
+
+        // Show logged-in user's accounts and balance
+        Label balanceInfo = new Label();
+        balanceInfo.setWrapText(true);
+        try {
+            List<Account> myAccs = accountService.getAll().stream()
+                    .filter(a -> a.getCustomer().getId() == currentCustomer.getId()).toList();
+            if (myAccs.isEmpty()) {
+                balanceInfo.setText("You have no accounts. Please open one first.");
+            } else {
+                StringBuilder sb = new StringBuilder("Your accounts:\n");
+                for (Account a : myAccs) {
+                    sb.append(String.format("  • %s — %.2f RWF%n", a.getAccountType(), a.getBalance()));
+                }
+                balanceInfo.setText(sb.toString());
+            }
+        } catch (SQLException ex) {
+            balanceInfo.setText("Could not load account info.");
+        }
+        balanceInfo.setStyle("-fx-background-color:" + bg + ";-fx-padding:12;-fx-background-radius:8;-fx-text-fill:#374151;");
+
+        TextField toPhoneF = field("Recipient Phone Number");
+        toPhoneF.setVisible(isTransfer); toPhoneF.setManaged(isTransfer);
+        Label toPhoneLbl = label("Recipient Phone Number");
+        toPhoneLbl.setVisible(isTransfer); toPhoneLbl.setManaged(isTransfer);
+
+        TextField amtF = field("Amount (RWF)");
+        Label errorMsg = new Label(); errorMsg.setWrapText(true);
+
+        Button btn = new Button(icon + "  " + type);
+        btn.getStyleClass().add("btn-primary");
+        btn.setMaxWidth(Double.MAX_VALUE);
+        btn.setStyle("-fx-background-color:" + accent + ";");
+
+        btn.setOnAction(e -> {
+            errorMsg.setText("");
+            String amtTxt = amtF.getText().trim();
+            if (amtTxt.isBlank()) { styled(errorMsg, "✗ Enter an amount.", false); return; }
+            try {
+                double amt = Double.parseDouble(amtTxt);
+                List<Account> fromAccs = accountService.getAll().stream()
+                        .filter(a -> a.getCustomer().getId() == currentCustomer.getId()).toList();
+                if (fromAccs.isEmpty()) { styled(errorMsg, "✗ You have no accounts. Please open one first.", false); return; }
+                int fromId = fromAccs.get(0).getId();
+                String ref;
+                String recipientName = "";
+                if ("Deposit".equals(type)) {
+                    ref = transactionService.deposit(fromId, amt);
+                } else if ("Withdraw".equals(type)) {
+                    ref = transactionService.withdraw(fromId, amt);
+                } else {
+                    String toPh = toPhoneF.getText().trim();
+                    if (toPh.isBlank()) { styled(errorMsg, "✗ Enter the recipient's phone number.", false); return; }
+                    Customer to = customerService.getCustomerByPhone(toPh);
+                    if (to == null) { styled(errorMsg, "✗ Recipient phone number not found.", false); return; }
+                    List<Account> toAccs = accountService.getAll().stream()
+                            .filter(a -> a.getCustomer().getId() == to.getId()).toList();
+                    if (toAccs.isEmpty()) { styled(errorMsg, "✗ Recipient has no accounts.", false); return; }
+                    recipientName = to.getFullName();
+                    ref = transactionService.transfer(fromId, toAccs.get(0).getId(), amt);
+                }
+                amtF.clear(); if (isTransfer) toPhoneF.clear();
+                // Refresh balance display
+                List<Account> refreshed = accountService.getAll().stream()
+                        .filter(a -> a.getCustomer().getId() == currentCustomer.getId()).toList();
+                double newBalance = refreshed.stream().mapToDouble(Account::getBalance).sum();
+                StringBuilder sb = new StringBuilder("Your accounts:\n");
+                for (Account a : refreshed) {
+                    sb.append(String.format("  • %s — %.2f RWF%n", a.getAccountType(), a.getBalance()));
+                }
+                balanceInfo.setText(sb.toString());
+                // Show success modal
+                showSuccessModal(type, amt, newBalance, recipientName, ref);
+            } catch (InsufficientBalanceException | InvalidAmountException | AccountNotFoundException ex) {
+                styled(errorMsg, "✗ " + ex.getMessage(), false);
+            } catch (NumberFormatException ex) {
+                styled(errorMsg, "✗ Enter a valid number.", false);
+            } catch (Exception ex) {
+                styled(errorMsg, "✗ Error: " + ex.getMessage(), false);
+            }
+        });
+
+        card.getChildren().addAll(balanceInfo);
+        if (isTransfer) card.getChildren().addAll(toPhoneLbl, toPhoneF);
+        card.getChildren().addAll(label("Amount (RWF)"), amtF, btn, errorMsg);
+
+        root.getChildren().addAll(title, card);
+        return root;
+    }
+
     private VBox buildTransactionsTable(boolean limitRows) {
         TableView<Transaction> table = new TableView<>();
         table.getStyleClass().add("table-view");
@@ -485,7 +593,14 @@ public class DashboardController {
         table.getColumns().addAll(cId, cAcc, cType, cAmt, cTime);
 
         try {
-            List<Transaction> all = transactionService.getAll();
+            List<Account> myAccounts = accountService.getAll().stream()
+                    .filter(a -> a.getCustomer().getId() == currentCustomer.getId()).toList();
+            java.util.Set<Integer> myAccountIds = myAccounts.stream()
+                    .map(Account::getId)
+                    .collect(java.util.stream.Collectors.toSet());
+            List<Transaction> all = transactionService.getAll().stream()
+                    .filter(t -> myAccountIds.contains(t.getAccount().getId()))
+                    .collect(java.util.stream.Collectors.toList());
             if (limitRows && all.size() > 5) all = all.subList(0, 5);
             table.setItems(FXCollections.observableArrayList(all));
         } catch (SQLException e) { showError(e.getMessage()); }
@@ -514,24 +629,24 @@ public class DashboardController {
         stmtBox.setMinWidth(300);
 
         Label stmtTitle = new Label("📄 Account Statement"); stmtTitle.getStyleClass().add("section-title");
+        // Pre-fill with logged-in user's phone (read-only — user can only see their own statement)
         TextField stmtPhoneF = field("Your Phone Number");
+        stmtPhoneF.setText(currentCustomer.getPhoneNumber());
+        stmtPhoneF.setEditable(false);
+        stmtPhoneF.setStyle("-fx-background-color:#f3f4f6;");
         ComboBox<String> stmtAccCombo = new ComboBox<>();
         stmtAccCombo.setPromptText("Select account");
         stmtAccCombo.setMaxWidth(Double.MAX_VALUE);
         stmtAccCombo.setVisible(false); stmtAccCombo.setManaged(false);
-        Button stmtLookupBtn = new Button("🔍 Find Accounts"); stmtLookupBtn.getStyleClass().add("btn-secondary");
+        Button stmtLookupBtn = new Button("🔍 Load My Accounts"); stmtLookupBtn.getStyleClass().add("btn-secondary");
 
         final List<Account>[] stmtAccHolder = new List[]{null};
 
         stmtLookupBtn.setOnAction(e -> {
-            String ph = stmtPhoneF.getText().trim();
-            if (ph.isBlank()) { output.setText("Please enter your phone number."); return; }
             try {
-                Customer c = customerService.getCustomerByPhone(ph);
-                if (c == null) { output.setText("No customer found for that phone number."); return; }
                 List<Account> accs = accountService.getAll().stream()
-                        .filter(a -> a.getCustomer().getId() == c.getId()).toList();
-                if (accs.isEmpty()) { output.setText("This customer has no accounts."); return; }
+                        .filter(a -> a.getCustomer().getId() == currentCustomer.getId()).toList();
+                if (accs.isEmpty()) { output.setText("You have no accounts."); return; }
                 stmtAccHolder[0] = accs;
                 stmtAccCombo.getItems().clear();
                 for (Account a : accs) {
@@ -555,7 +670,7 @@ public class DashboardController {
 
         stmtBox.getChildren().addAll(stmtTitle, label("Phone Number"), stmtPhoneF, stmtLookupBtn, stmtAccCombo, stmtBtn);
 
-        Button exportBtn = new Button("⬇ Export CSV"); exportBtn.getStyleClass().add("btn-primary");
+        Button exportBtn = new Button("⬇ Export My Transactions CSV"); exportBtn.getStyleClass().add("btn-primary");
         exportBtn.setOnAction(e -> {
             FileChooser fc = new FileChooser(); fc.setTitle("Save CSV Export");
             fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("CSV Files", "*.csv"));
@@ -567,9 +682,9 @@ public class DashboardController {
             }
         });
 
-        HBox topRow = new HBox(12, dailyBtn, stmtBox, exportBtn);
+        HBox topRow = new HBox(12, dailyBtn, stmtBox);
         topRow.setAlignment(Pos.TOP_LEFT);
-        root.getChildren().addAll(title, topRow, output);
+        root.getChildren().addAll(title, topRow, exportBtn, output);
         return root;
     }
 
@@ -606,6 +721,68 @@ public class DashboardController {
     }
 
     // ── Helpers ───────────────────────────────────────────────────
+
+    private void showSuccessModal(String type, double amount, double newBalance, String recipientName, String ref) {
+        // Build custom dialog
+        javafx.stage.Stage dialog = new javafx.stage.Stage();
+        dialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        dialog.initOwner(contentPane.getScene().getWindow());
+        dialog.setTitle("Transaction Successful");
+        dialog.setResizable(false);
+
+        VBox root = new VBox(20);
+        root.setPadding(new Insets(36));
+        root.setAlignment(Pos.CENTER);
+        root.setStyle("-fx-background-color:white;");
+        root.setPrefWidth(420);
+
+        // Icon
+        String emoji = "Deposit".equals(type) ? "✅" : "Withdraw".equals(type) ? "✅" : "✅";
+        String accentColor = "Deposit".equals(type) ? "#16a34a" : "Withdraw".equals(type) ? "#ea580c" : "#0369a1";
+        Label iconLbl = new Label(emoji);
+        iconLbl.setStyle("-fx-font-size:52px;");
+
+        // Title
+        Label titleLbl = new Label("Transaction Successful!");
+        titleLbl.setStyle("-fx-font-size:20px;-fx-font-weight:bold;-fx-text-fill:#111827;");
+
+        // Details box
+        VBox details = new VBox(10);
+        details.setPadding(new Insets(20));
+        details.setStyle("-fx-background-color:#f9fafb;-fx-background-radius:10;-fx-border-color:#e5e7eb;-fx-border-radius:10;");
+
+        String actionWord = "Deposit".equals(type) ? "Deposited" : "Withdraw".equals(type) ? "Withdrawn" : "Transferred";
+        Label amtLbl = new Label(String.format("%s:  %.2f RWF", actionWord, amount));
+        amtLbl.setStyle("-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:" + accentColor + ";");
+
+        if (!recipientName.isBlank()) {
+            Label toLabel = new Label("To:  " + recipientName);
+            toLabel.setStyle("-fx-font-size:14px;-fx-text-fill:#374151;");
+            details.getChildren().add(toLabel);
+        }
+
+        Label balLbl = new Label(String.format("New Balance:  %.2f RWF", newBalance));
+        balLbl.setStyle("-fx-font-size:15px;-fx-font-weight:bold;-fx-text-fill:#111827;");
+
+        Label refLbl = new Label("Ref: " + ref.substring(0, Math.min(ref.length(), 12)) + "…");
+        refLbl.setStyle("-fx-font-size:12px;-fx-text-fill:#6b7280;");
+
+        details.getChildren().addAll(amtLbl, balLbl, refLbl);
+
+        // OK button
+        Button okBtn = new Button("OK");
+        okBtn.setPrefWidth(160);
+        okBtn.setPrefHeight(40);
+        okBtn.setStyle("-fx-background-color:" + accentColor + ";-fx-text-fill:white;-fx-font-size:14px;" +
+                "-fx-font-weight:bold;-fx-background-radius:8;-fx-cursor:hand;");
+        okBtn.setOnAction(ev -> dialog.close());
+
+        root.getChildren().addAll(iconLbl, titleLbl, details, okBtn);
+
+        javafx.scene.Scene scene = new javafx.scene.Scene(root);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
 
     private TextField field(String prompt) {
         TextField tf = new TextField(); tf.setPromptText(prompt); tf.getStyleClass().add("input-field"); return tf;

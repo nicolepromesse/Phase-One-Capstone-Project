@@ -8,9 +8,13 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 public class LoginController {
+
+    @FXML
+    private TextField phoneField;
 
     @FXML
     private PasswordField pinField;
@@ -25,7 +29,13 @@ public class LoginController {
 
         errorLabel.setText("");
 
-        String pin = pinField.getText().trim();
+        String phone = phoneField.getText().trim();
+        String pin   = pinField.getText().trim();
+
+        if (phone.isEmpty()) {
+            errorLabel.setText("Please enter your phone number.");
+            return;
+        }
 
         if (pin.isEmpty()) {
             errorLabel.setText("Please enter your PIN.");
@@ -34,10 +44,10 @@ public class LoginController {
 
         try {
 
-            Customer customer = customerService.getCustomerByPin(pin);
+            Customer customer = customerService.getCustomerByPhoneAndPin(phone, pin);
 
             if (customer == null) {
-                errorLabel.setText("Incorrect PIN. Please try again.");
+                errorLabel.setText("Incorrect phone number or PIN. Please try again.");
                 return;
             }
 
