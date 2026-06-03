@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,14 @@ public class TransactionReportGenerator {
         return outputPath;
     }
 
+
+    public String exportForCustomer(List<Integer> accountIds, String outputPath) throws SQLException, IOException {
+        List<Transaction> transactions = transactionDAO.getAll().stream()
+                .filter(t -> accountIds.contains(t.getAccount().getId()))
+                .collect(java.util.stream.Collectors.toList());
+        writeCSV(outputPath, transactions);
+        return outputPath;
+    }
     private void writeCSV(String path, List<Transaction> transactions) throws IOException {
         try (PrintWriter pw = new PrintWriter(new FileWriter(path))) {
             pw.println("ID,AccountID,ReferenceID,Type,Amount,Timestamp");

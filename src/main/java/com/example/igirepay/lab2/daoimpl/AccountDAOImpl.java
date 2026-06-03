@@ -206,4 +206,30 @@ public class AccountDAOImpl implements DAO<Account> {
             System.out.println("Account deleted successfully");
         }
     }
+
+    public List<Account> getByCustomerId(int customerId) throws SQLException {
+        List<Account> accounts = new ArrayList<>();
+        String sql = "SELECT * FROM accounts WHERE customer_id = ?";
+        try (
+                Connection connection = DBConnection.connect();
+                PreparedStatement ps = connection.prepareStatement(sql)
+        ) {
+            ps.setInt(1, customerId);
+            ResultSet resultSet = ps.executeQuery();
+            while (resultSet.next()) {
+                int accountId = resultSet.getInt("id");
+                String accountType = resultSet.getString("account_type");
+                double balance = resultSet.getDouble("balance");
+                LocalDateTime createdAt = resultSet.getTimestamp("created_at").toLocalDateTime();
+                Customer customer = new Customer();
+                customer.setId(customerId);
+                if (accountType.equalsIgnoreCase("WALLET")) {
+                    accounts.add(new WalletAccount(accountId, customer, balance, createdAt, 0, 0, true, 0, null));
+                } else {
+                    accounts.add(new SavingsAccount(accountId, customer, accountType, balance, createdAt, 0, 0, 0, 0, null));
+                }
+            }
+        }
+        return accounts;
+    }
 }

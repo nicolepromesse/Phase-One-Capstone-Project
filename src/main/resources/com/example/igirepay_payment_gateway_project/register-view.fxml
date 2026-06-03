@@ -10,22 +10,33 @@
            stylesheets="@styles.css"
            styleClass="root-pane">
 
-    <VBox alignment="CENTER"
-          spacing="16"
-          styleClass="login-card">
+    <VBox styleClass="login-card"
+          alignment="CENTER"
+          spacing="14"
+          prefWidth="420"
+          maxWidth="420">
 
         <padding>
-            <Insets top="40" right="48" bottom="40" left="48"/>
+            <Insets top="32" right="32" bottom="32" left="32"/>
         </padding>
 
-        <Label text="💳 IgirePay"
-               styleClass="brand-title"/>
+        <!-- Branding -->
+        <VBox alignment="CENTER" spacing="6">
 
-        <Label text="Create Account"
-               styleClass="brand-sub"/>
+            <Label text="💳"
+                   style="-fx-font-size: 38px;"/>
+
+            <Label text="IgirePay"
+                   styleClass="brand-title"/>
+
+            <Label text="Create Account"
+                   styleClass="brand-sub"/>
+
+        </VBox>
 
         <Separator/>
 
+        <!-- Form -->
         <VBox spacing="10">
 
             <Label text="Full Name"
@@ -64,8 +75,8 @@
                            styleClass="input-field"/>
 
             <Label fx:id="messageLabel"
-                   wrapText="true"
-                   styleClass="error-label"/>
+                   styleClass="error-label"
+                   wrapText="true"/>
 
             <Button text="Create Account"
                     onAction="#handleRegister"

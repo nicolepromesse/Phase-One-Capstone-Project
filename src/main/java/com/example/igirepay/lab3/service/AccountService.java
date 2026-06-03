@@ -45,4 +45,8 @@ public class AccountService {
         if (account instanceof SavingsAccount) return "Savings";
         return account.getAccountType();
     }
+
+    public List<Account> getByCustomerId(int customerId) throws SQLException {
+        return accountDAO.getByCustomerId(customerId);
+    }
 }

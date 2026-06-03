@@ -31,15 +31,33 @@
 
             <Label text="MENU" styleClass="sidebar-section"/>
 
-            <Button text="🏠 Dashboard" onAction="#showDashboard" styleClass="sidebar-btn" maxWidth="Infinity"/>
-            <Button text="👤 Customers" onAction="#showCustomers" styleClass="sidebar-btn" maxWidth="Infinity"/>
-            <Button text="🏦 Accounts" onAction="#showAccounts" styleClass="sidebar-btn" maxWidth="Infinity"/>
-            <Button text="💸 Transactions" onAction="#showTransactions" styleClass="sidebar-btn" maxWidth="Infinity"/>
-            <Button text="📊 Reports" onAction="#showReports" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="🏠 Dashboard"  onAction="#showDashboard"    styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="👤 Customers"  onAction="#showCustomers"    styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="🏦 Accounts"   onAction="#showAccounts"     styleClass="sidebar-btn" maxWidth="Infinity"/>
+
+            <Label text="TRANSACTIONS" styleClass="sidebar-section"/>
+
+            <Button text="➕ Deposit"    onAction="#showDeposit"      styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="➖ Withdraw"   onAction="#showWithdraw"     styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="⇄  Transfer"  onAction="#showTransfer"     styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="📋 History"    onAction="#showTransactions" styleClass="sidebar-btn" maxWidth="Infinity"/>
 
             <Separator/>
 
-            <Button text="🔐 Change PIN" onAction="#showChangePin" styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Label text="REPORTS" styleClass="sidebar-section"/>
+
+            <Button text="📅 Daily Summary"  onAction="#showDailySummary"  styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="📄 View Statement" onAction="#showStatement"     styleClass="sidebar-btn" maxWidth="Infinity"/>
+            <Button text="⬇ Export CSV"      onAction="#showExportCsv"     styleClass="sidebar-btn" maxWidth="Infinity"/>
+
+            <Separator/>
+
+            <Label text="LOANS" styleClass="sidebar-section"/>
+            <Button text="💸 Request Loan"   onAction="#showRequestLoan"  styleClass="sidebar-btn" maxWidth="Infinity"/>
+
+            <Separator/>
+
+            <Button text="🔐 Change PIN" onAction="#showChangePin"    styleClass="sidebar-btn" maxWidth="Infinity"/>
         </VBox>
     </left>
 

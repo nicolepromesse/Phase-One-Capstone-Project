@@ -40,3 +40,28 @@ CREATE TABLE processed_requests (
                                     reference_id VARCHAR(100) UNIQUE NOT NULL,
                                     processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE loans (
+                       id               SERIAL PRIMARY KEY,
+                       account_id       INT NOT NULL,
+                       customer_id      INT NOT NULL,
+                       requested_amount DECIMAL(15,2) NOT NULL,
+                       approved_amount  DECIMAL(15,2) NOT NULL DEFAULT 0,
+                       interest_rate    DECIMAL(5,2)  NOT NULL DEFAULT 5.00,  -- flat rate %
+                       repaid_amount    DECIMAL(15,2) NOT NULL DEFAULT 0,
+    -- PENDING | APPROVED | REJECTED | REPAID
+                       status           VARCHAR(20)   NOT NULL DEFAULT 'PENDING',
+                       reference_id     VARCHAR(100)  UNIQUE NOT NULL,
+                       requested_at     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+                       updated_at       TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+
+                       CONSTRAINT fk_loan_account
+                           FOREIGN KEY (account_id)
+                               REFERENCES accounts(id)
+                               ON DELETE CASCADE,
+
+                       CONSTRAINT fk_loan_customer
+                           FOREIGN KEY (customer_id)
+                               REFERENCES customers(id)
+                               ON DELETE CASCADE
+);
